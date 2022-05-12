@@ -27,12 +27,17 @@ namespace NwSearch.Entities
         public SearchItem(T value, IEnumerable<Keyword> keywords, int priority)
         {
             Value = value;
-            _keywords.AddRange(keywords);
+            AddKeywords(keywords);
             Priority = priority;
         }
 
         public void AddKeywords(IEnumerable<Keyword> keywords)
         {
+            if (keywords == null)
+            {
+                return;
+            }
+            
             foreach(var keyword in keywords)
             {
                 AddKeyword(keyword);

@@ -8,7 +8,7 @@ namespace NwSearch.Search
     {
         private string[] _wordsSeparator;
         
-        private WordSearch _wordSearch;
+        private readonly WordSearch _wordSearch;
 
         public IEnumerable<string> WordsSeparator
         {

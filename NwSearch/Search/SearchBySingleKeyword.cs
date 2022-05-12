@@ -11,7 +11,7 @@ namespace NwSearch.Search
     /// <typeparam name="T"></typeparam>
     public class SearchBySingleKeyword<T> : ISearchBySingleKeyword<T>
     {
-        private List<SearchItem<T>> _searchItems = new List<SearchItem<T>>();
+        private readonly List<SearchItem<T>> _searchItems = new List<SearchItem<T>>();
 
         public ITextSearch TextSearch { get; }
 
@@ -80,15 +80,10 @@ namespace NwSearch.Search
                 .Where(keyword => containedKeywordsNames
                     .Any(keywordName => keywordName == keyword.Name));
             
-            int matchScore = containedKeywords?.Sum(keyword => keyword.Score) ?? 0;
-
-            return new SearchResult<T>()
-            {
-                Status = searchResultStatus,
-                KeywordsMatchCollection = containedKeywords,
-                MatchScore = matchScore,
-                SearchItem = resultSearchItem
-            };
+            return new SearchResult<T>(searchResultStatus,
+                                    resultSearchItem,
+                                    containedKeywords?.Sum(keyword => keyword.Score) ?? 0,
+                                    containedKeywords);
         }
 
         /// <summary>
@@ -117,15 +112,12 @@ namespace NwSearch.Search
             {
                 var containedKeywords = searchItem.Keywords
                     .Where(keyword => containedKeywordsNames.Any(keywordName => keywordName == keyword.Name));
-                
+
                 searchResults.Add(
-                    new SearchResult<T>()
-                    {
-                        Status = SearchResultStatus.Success,
-                        KeywordsMatchCollection = containedKeywords,
-                        MatchScore = containedKeywords.Sum(keyword => keyword.Score),
-                        SearchItem = searchItem
-                    });
+                    new SearchResult<T>(SearchResultStatus.Success,
+                                        searchItem,
+                                        containedKeywords.Sum(keyword => keyword.Score),
+                                        containedKeywords));
             }
 
             return searchResults;

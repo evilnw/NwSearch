@@ -4,25 +4,58 @@ namespace NwSearch.Entities
 {
     public class SearchResult<T>
     {
-        private List<Keyword> _keywordsMatchCollection = new List<Keyword>();
+        private readonly List<Keyword> _keywordsMatchCollection = new List<Keyword>();
 
         public SearchResultStatus Status { get; set; } = SearchResultStatus.Empty;
 
         public int MatchScore { get; set; } = 0;
 
-        public SearchItem<T>? SearchItem { get; set; } = default(SearchItem<T>);
+        public SearchItem<T>? SearchItem { get; set; } = default;
 
-        public IEnumerable<Keyword> KeywordsMatchCollection
+        public IEnumerable<Keyword> KeywordsMatchCollection => _keywordsMatchCollection.ToArray();
+
+        public SearchResult()
+        { }
+
+        public SearchResult(
+            SearchResultStatus status,
+            SearchItem<T>? searchItem,
+            int matchScore,
+            IEnumerable<Keyword>? matchedKeywords)
         {
-            get => _keywordsMatchCollection.ToArray();
-            set
+            Status = status;
+            SearchItem = searchItem;
+            MatchScore = matchScore;
+            AddKeywords(matchedKeywords);
+        }
+
+        public void AddKeywords(IEnumerable<Keyword>? keywords)
+        {
+            if (keywords == null)
             {
-                _keywordsMatchCollection = new List<Keyword>();
-                if (value != null)
-                {
-                    _keywordsMatchCollection.AddRange(value);
-                }
+                return;
+            }
+            foreach (var keyword in keywords)
+            {
+                AddKeyword(keyword);
             }
         }
+
+        public bool AddKeyword(Keyword keyword)
+        {
+            if (keyword == null)
+            {
+                return false;
+            }
+            _keywordsMatchCollection.Add(keyword);
+            return true;
+        }
+
+        public bool RemoveKeyword(Keyword keyword)
+            => _keywordsMatchCollection.Remove(keyword);
+
+        public void RemoveKeywordsByName(string keywordName)
+            => _keywordsMatchCollection.RemoveAll(keyword => keyword.Name == keywordName);
+
     }
 }

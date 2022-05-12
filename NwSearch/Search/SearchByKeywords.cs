@@ -10,7 +10,7 @@ namespace NwSearch.Search
     /// </summary>
     public class SearchByKeywords : ISearchByKeywords
     {
-        private List<SearchItem<string>> _searchItems;
+        private readonly List<SearchItem<string>> _searchItems = new List<SearchItem<string>>();
 
         public ITextSearch TextSearch { get; }
 
@@ -28,7 +28,6 @@ namespace NwSearch.Search
             ITextSearch textSearch, 
             int minAmountScores)
         {
-            _searchItems = new List<SearchItem<string>>();
             TextSearch = textSearch;
             MinAmountScores = minAmountScores;
         }
@@ -38,7 +37,7 @@ namespace NwSearch.Search
             IEnumerable<SearchItem<string>> searchItems, 
             int minAmountScores)
         {
-            _searchItems = new List<SearchItem<string>>(searchItems);
+            _searchItems.AddRange(searchItems);
             TextSearch = textSearch;
             MinAmountScores = minAmountScores;
         }
@@ -82,13 +81,10 @@ namespace NwSearch.Search
                 }
                 
                 searchResults.Add(
-                    new SearchResult<string>()
-                    {
-                        Status = SearchResultStatus.Success,
-                        MatchScore = amountScores,
-                        KeywordsMatchCollection = containedKeywords,
-                        SearchItem = searchItem
-                    });
+                    new SearchResult<string>(SearchResultStatus.Success,
+                                            searchItem,
+                                            amountScores,
+                                            containedKeywords));
             }
 
             return searchResults;

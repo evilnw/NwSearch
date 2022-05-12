@@ -19,7 +19,7 @@ namespace NwSearch.Search
         
         private Dictionary<string, T> _digitsNames;
         
-        private TextSearch _textSearch;
+        private readonly TextSearch _textSearch;
 
         public CultureInfo? CultureInfo { get; set; }
 
@@ -131,8 +131,7 @@ namespace NwSearch.Search
                     continue;
                 }
 
-                T value;
-                if (!TryParse(substringWords.Last(), out value))
+                if (!TryParse(substringWords.Last(), out T value))
                 {
                     continue;
                 }
@@ -147,13 +146,10 @@ namespace NwSearch.Search
                         .Any(keywordName => keywordIter.Name == keywordName));
 
                 searchResults.Add(
-                    new SearchResult<T>()
-                    {
-                        Status = SearchResultStatus.Success,
-                        MatchScore = keywords.Sum(keyword => keyword.Score),
-                        KeywordsMatchCollection = keywords,
-                        SearchItem = new SearchItem<T>(value, keywords, 1)
-                    });
+                    new SearchResult<T>(SearchResultStatus.Success,
+                                        new SearchItem<T>(value, keywords, 1),
+                                        keywords.Sum(keyword => keyword.Score),
+                                        keywords));
             }
             return searchResults;
         }
@@ -165,7 +161,7 @@ namespace NwSearch.Search
 
         private bool TryParse(string word, out T value)
         {
-            value = default(T)!;
+            value = default!;
             try
             {
                 if (_digitsNames.ContainsKey(word))

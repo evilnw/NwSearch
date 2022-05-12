@@ -12,15 +12,15 @@ namespace NwSearch.Search
     {
         private string[] _wordsSeparator;
         
-        private List<string> _ignoredWordsCollection;
+        private readonly List<string> _ignoredWordsCollection = new List<string>();
         
-        private List<SynonymWord> _synonymWordsCollection;
+        private readonly List<SynonymWord> _synonymWordsCollection = new List<SynonymWord>();
         
         private List<char> _charsCollection;
 
-        private ITextSearch _textSearch;
+        private readonly ITextSearch _textSearch;
 
-        private IWordSearch _wordsSearch;
+        private readonly IWordSearch _wordsSearch;
         
         public string JoinNameSeparator { get; set; } = " ";
         
@@ -72,8 +72,6 @@ namespace NwSearch.Search
             _charsCollection = new List<char>(charsCollection);
             _textSearch = new TextSearch(wordsSeparator);
             _wordsSearch = new WordSearch(wordsSeparator);
-            _synonymWordsCollection = new List<SynonymWord>();
-            _ignoredWordsCollection = new List<string>();
         }
 
         public void AddSynonym(SynonymWord synonymWord)
@@ -127,13 +125,10 @@ namespace NwSearch.Search
             
             var searchResultStatus = (isOnlyDigits == true) ? SearchResultStatus.Empty : SearchResultStatus.Success;
 
-            return new SearchResult<string>()
-            {
-                Status = searchResultStatus,
-                MatchScore = searchItem.Keywords.Sum(keyword => keyword.Score),
-                SearchItem = searchItem,
-                KeywordsMatchCollection = searchItem.Keywords
-            };
+            return new SearchResult<string>(searchResultStatus,
+                                            searchItem,
+                                            searchItem.Keywords.Sum(keyword => keyword.Score),
+                                            searchItem.Keywords);
         }
 
         private IEnumerable<Keyword> MergeKeywords(IEnumerable<Keyword> keywords)
