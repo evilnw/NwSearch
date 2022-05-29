@@ -53,11 +53,11 @@ namespace NwSearch.Search
 
         public QuantitySearch(
             IEnumerable<string> wordsSeparator, 
-            IEnumerable<Keyword> quantityKeywordsCollection)
+            IEnumerable<Keyword> quantityKeywords)
         {
             _wordsSeparator = wordsSeparator.ToArray();
             _textSearch = new TextSearch(wordsSeparator);
-            _quantityKeywords = new List<Keyword>(quantityKeywordsCollection);
+            _quantityKeywords = new List<Keyword>(quantityKeywords);
             _digitsNames = new Dictionary<string, T>();
 
             if (!IsNumericType())

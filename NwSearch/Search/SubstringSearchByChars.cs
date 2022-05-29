@@ -12,11 +12,11 @@ namespace NwSearch.Search
     {
         private string[] _wordsSeparator;
         
-        private readonly List<string> _ignoredWordsCollection = new List<string>();
+        private readonly List<string> _ignoredWords = new List<string>();
         
-        private readonly List<SynonymWord> _synonymWordsCollection = new List<SynonymWord>();
+        private readonly List<SynonymWord> _synonymWords = new List<SynonymWord>();
         
-        private List<char> _charsCollection;
+        private List<char> _chars;
 
         private readonly ITextSearch _textSearch;
 
@@ -30,14 +30,14 @@ namespace NwSearch.Search
         public int MinWordLength { get; set; } = 1;
 
         /// <summary>
-        /// Следует ли игнорировать найденную подстроку, если она полностью состоит из цифр, которых входили в CharsCollection
+        /// Следует ли игнорировать найденную подстроку, если она полностью состоит из цифр, которых входили в Chars
         /// </summary>
         public bool IsIgnoreOnlyDigitsName { get; set; } = true;
 
         /// <summary>
         /// Список слов, которые следует проигнорировать даже если они удоволетворяют поиску
         /// </summary>
-        public IEnumerable<string> IgnoredWordsCollection => _ignoredWordsCollection.ToArray();
+        public IEnumerable<string> IgnoredWords => _ignoredWords.ToArray();
 
         public IEnumerable<string> WordsSeparator
         {
@@ -53,44 +53,44 @@ namespace NwSearch.Search
         /// <summary>
         /// Список синонимов, которые не следует игнорировать, если они НЕ удоволетворяют условию поиску по символам, но встречаются в тексте.
         /// </summary>
-        public IEnumerable<SynonymWord> SynonymWordsCollection => _synonymWordsCollection.ToArray();
+        public IEnumerable<SynonymWord> SynonymWords => _synonymWords.ToArray();
 
         /// <summary>
         /// Список символов, которые используются для поиска слов в тексте.
         /// </summary>
-        public IEnumerable<char> CharsCollection
+        public IEnumerable<char> Chars
         {
-            get => _charsCollection.ToArray();
-            set => _charsCollection = new List<char>(value);
+            get => _chars.ToArray();
+            set => _chars = new List<char>(value);
         }
 
         public SubstringSearchByChars(
             IEnumerable<string> wordsSeparator, 
-            IEnumerable<char> charsCollection)
+            IEnumerable<char> chars)
         {
             _wordsSeparator = wordsSeparator.ToArray();
-            _charsCollection = new List<char>(charsCollection);
+            _chars = new List<char>(chars);
             _textSearch = new TextSearch(wordsSeparator);
             _wordsSearch = new WordSearch(wordsSeparator);
         }
 
         public void AddSynonym(SynonymWord synonymWord)
-            => _synonymWordsCollection.Add(synonymWord);
+            => _synonymWords.Add(synonymWord);
 
-        public void AddSynonyms(IEnumerable<SynonymWord> synonymWordsCollection)
-            => _synonymWordsCollection.AddRange(synonymWordsCollection);
+        public void AddSynonyms(IEnumerable<SynonymWord> synonymWords)
+            => _synonymWords.AddRange(synonymWords);
 
         public void RemoveSynonym(SynonymWord synonymWord)
-            => _synonymWordsCollection.Remove(synonymWord);
+            => _synonymWords.Remove(synonymWord);
 
         public void AddIgnoredWord(string ignoredWord)
-            => _ignoredWordsCollection.Add(ignoredWord);
+            => _ignoredWords.Add(ignoredWord);
 
-        public void AddIgnoredWords(IEnumerable<string> ignoredWordsCollection)
-            => _ignoredWordsCollection.AddRange(ignoredWordsCollection);
+        public void AddIgnoredWords(IEnumerable<string> ignoredWords)
+            => _ignoredWords.AddRange(ignoredWords);
 
         public void RemoveIgnoredWord(string ignoredWord)
-            => _ignoredWordsCollection.Remove(ignoredWord);
+            => _ignoredWords.Remove(ignoredWord);
 
         /// <summary>
         /// Находит в тексте все слова, которые удоволетворяют настройкам поиска.
@@ -99,11 +99,11 @@ namespace NwSearch.Search
         /// Пример:
         /// text = "сколько стоит adobe фотошоп версия cloud - 13 шт".
         /// Условия поиска:
-        /// В _synonymWordsCollection хранятся синонимы для слова "photoshop" - "фотошоп", "фотошопе", "пхотошоп".
-        /// В _charsCollection - хранятся все английские символы('a', 'b', 'c' и т.д.)
+        /// В _synonymWords хранятся синонимы для слова "photoshop" - "фотошоп", "фотошопе", "пхотошоп".
+        /// В _chars - хранятся все английские символы('a', 'b', 'c' и т.д.)
         /// Результат:
         /// В результате SearchResult.SearchItem.Value будет хранится строка("adobe фотошоп cloud")
-        /// В SearchResult.KeywordsMatchCollection и SearchResult.SearchItem.Keywords будут хранится ключевые слова:
+        /// В SearchResult.KeywordsMatch и SearchResult.SearchItem.Keywords будут хранится ключевые слова:
         /// "adobe", "photoshop", "cloud"
         /// </example>
         public SearchResult<string> FindSubstring(string text)
@@ -115,7 +115,7 @@ namespace NwSearch.Search
                 return new SearchResult<string>() { Status = SearchResultStatus.Empty };
             }
             
-            var digits = _charsCollection.Where(ch => char.IsDigit(ch));
+            var digits = _chars.Where(ch => char.IsDigit(ch));
             
             bool isOnlyDigits = searchItem.Value
                 .Split(_wordsSeparator, StringSplitOptions.RemoveEmptyEntries)
@@ -147,7 +147,7 @@ namespace NwSearch.Search
         }
 
         /* Пример алгоритма формирования имени:
-            1. Найти все словосочетния(2 и более слова) из _synonymWordsCollection, которые есть в тексте.  
+            1. Найти все словосочетния(2 и более слова) из _synonymWords, которые есть в тексте.  
             2. Для каждого словосочетния получить его все индексы в тексте.
             3. Произвести иттерацию по каждому индексу.
             4. Находим все словосочетния синонимы, которые находятся по данному индексу и соритурем их в порядке убывания размера словосочетания.
@@ -227,16 +227,16 @@ namespace NwSearch.Search
         {
             return text
                 .Split(_wordsSeparator, StringSplitOptions.RemoveEmptyEntries)
-                .Where(word => _synonymWordsCollection
-                    .Any(synonymWord => synonymWord.SynonymsCollection.Any(synonym => synonym == word)
-                                    || word.All(ch => _charsCollection.Any(chIter => chIter == ch))
+                .Where(word => _synonymWords
+                    .Any(synonymWord => synonymWord.Synonyms.Any(synonym => synonym == word)
+                                    || word.All(ch => _chars.Any(chIter => chIter == ch))
                                     && word.Length >= MinWordLength
                                     && !IsIgnoredWord(word)));
         }
 
         private bool IsIgnoredWord(string word)
         {
-            return _ignoredWordsCollection.Any(ingoredWord => ingoredWord == word);
+            return _ignoredWords.Any(ingoredWord => ingoredWord == word);
         }
 
         private IEnumerable<Keyword> CreateKeywordsArray(IEnumerable<string> words)
@@ -252,8 +252,8 @@ namespace NwSearch.Search
         private IEnumerable<Keyword> CreateKeywordsArray(string word)
         {
             var keywords = new List<Keyword>();
-            var containedSynonymWords = _synonymWordsCollection
-                .Where(synonymWord => synonymWord.SynonymsCollection
+            var containedSynonymWords = _synonymWords
+                .Where(synonymWord => synonymWord.Synonyms
                     .Any(synonym => synonym == word));
             if (containedSynonymWords.Any())
             {
@@ -271,11 +271,11 @@ namespace NwSearch.Search
 
         private IEnumerable<string> GetMultiWordsSynonyms(string text)
         {
-            var allSynonymsCollection = _synonymWordsCollection
-                .SelectMany(synonymWord => synonymWord.SynonymsCollection);
-            var containedSynonymsCollection = _textSearch.FindContainedWords(text, allSynonymsCollection);
+            var allSynonyms = _synonymWords
+                .SelectMany(synonymWord => synonymWord.Synonyms);
+            var containedSynonyms = _textSearch.FindContainedWords(text, allSynonyms);
 
-            return _wordsSearch.FindMultiWords(containedSynonymsCollection);
+            return _wordsSearch.FindMultiWords(containedSynonyms);
         }
     }
 }

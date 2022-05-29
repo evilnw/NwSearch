@@ -4,7 +4,7 @@ namespace NwSearch.Entities
 {
     public class SearchResult<T>
     {
-        private readonly List<Keyword> _keywordsMatchCollection = new List<Keyword>();
+        private readonly List<Keyword> _matchedKeywords = new List<Keyword>();
 
         public SearchResultStatus Status { get; set; } = SearchResultStatus.Empty;
 
@@ -12,7 +12,7 @@ namespace NwSearch.Entities
 
         public SearchItem<T>? SearchItem { get; set; } = default;
 
-        public IEnumerable<Keyword> KeywordsMatchCollection => _keywordsMatchCollection.ToArray();
+        public IEnumerable<Keyword> MatchedKeywords => _matchedKeywords.ToArray();
 
         public SearchResult()
         { }
@@ -47,15 +47,15 @@ namespace NwSearch.Entities
             {
                 return false;
             }
-            _keywordsMatchCollection.Add(keyword);
+            _matchedKeywords.Add(keyword);
             return true;
         }
 
         public bool RemoveKeyword(Keyword keyword)
-            => _keywordsMatchCollection.Remove(keyword);
+            => _matchedKeywords.Remove(keyword);
 
         public void RemoveKeywordsByName(string keywordName)
-            => _keywordsMatchCollection.RemoveAll(keyword => keyword.Name == keywordName);
+            => _matchedKeywords.RemoveAll(keyword => keyword.Name == keywordName);
 
     }
 }

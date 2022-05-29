@@ -9,43 +9,43 @@ namespace NwSearch.Entities
     /// </summary>
     public class SynonymWord
     {
-        private List<string> _synonymsCollection = new List<string>();
+        private List<string> _synomyms = new List<string>();
 
         public string Word { get; }
 
-        public IEnumerable<string> SynonymsCollection { get => _synonymsCollection.ToList(); }
+        public IEnumerable<string> Synonyms { get => _synomyms.ToList(); }
 
         public SynonymWord(string word)
         {
             Word = word;
         }
 
-        public SynonymWord(string word, IEnumerable<string> synonymsCollection)
+        public SynonymWord(string word, IEnumerable<string> synonyms)
         {
             Word = word;
-            _synonymsCollection.AddRange(synonymsCollection);
+            _synomyms.AddRange(synonyms);
         }
 
         public bool AddSynonym(string text)
         {
-            bool isContainsSynonym = _synonymsCollection.Any(synonym => synonym == text);
+            bool isContainsSynonym = _synomyms.Any(synonym => synonym == text);
             if (isContainsSynonym)
             {
                 return false;
             }
-            _synonymsCollection.Add(text);
+            _synomyms.Add(text);
             return true;
         }
 
-        public void AddSynonyms(IEnumerable<string> synonymsCollection)
+        public void AddSynonyms(IEnumerable<string> synonyms)
         {
-            foreach (var synonym in synonymsCollection)
+            foreach (var synonym in synonyms)
             {
                 AddSynonym(synonym);
             }
         }
 
         public bool RemoveSynonym(string text)
-            => _synonymsCollection.RemoveAll(synonym => synonym == text) > 0 ? true : false;
+            => _synomyms.RemoveAll(synonym => synonym == text) > 0 ? true : false;
     }
 }
