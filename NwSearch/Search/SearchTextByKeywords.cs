@@ -6,9 +6,9 @@ using System;
 namespace NwSearch.Search
 {
     /// <summary>
-    /// По ключевым словам ищет подходящие SearchItems
+    /// Поиск подходящих SearchItems по ключевым словам.
     /// </summary>
-    public class SearchByKeywords : ISearchByKeywords
+    public class SearchTextByKeywords : ISearchByKeywords
     {
         private readonly List<SearchItem<string>> _searchItems = new List<SearchItem<string>>();
 
@@ -24,7 +24,7 @@ namespace NwSearch.Search
         /// </summary>
         public IEnumerable<SearchItem<string>> SearchItems  => _searchItems.ToArray();
         
-        public SearchByKeywords(
+        public SearchTextByKeywords(
             ITextSearch textSearch, 
             int minAmountScores)
         {
@@ -32,7 +32,7 @@ namespace NwSearch.Search
             MinAmountScores = minAmountScores;
         }
 
-        public SearchByKeywords(
+        public SearchTextByKeywords(
             ITextSearch textSearch,
             IEnumerable<SearchItem<string>> searchItems, 
             int minAmountScores)
@@ -52,9 +52,8 @@ namespace NwSearch.Search
             => _searchItems.RemoveAll(searchItemIter => searchItemIter == searchItem);
 
         /// <summary>
-        /// Находит все подходящие SearchItems, которые удоволетворяют поиску по ключевым словам.
+        /// Находит все подходящие SearchItems в тексте которых есть ключевые слова.
         /// </summary>
-        /// <param name="keywords">список ключевых слов, по которым осуществлять поиск</param>
         public IEnumerable<SearchResult<string>> FindAll(IEnumerable<Keyword> keywords)
         {
             var searchResults = new List<SearchResult<string>>();
