@@ -14,7 +14,7 @@ namespace NwSearch.Search
         
         private readonly List<string> _ignoredWords = new List<string>();
         
-        private readonly List<SynonymWord> _synonymWords = new List<SynonymWord>();
+        private readonly List<WordSynonyms> _wordsSynonyms = new List<WordSynonyms>();
         
         private List<char> _chars;
 
@@ -53,7 +53,7 @@ namespace NwSearch.Search
         /// <summary>
         /// Список синонимов, которые не следует игнорировать, если они НЕ удоволетворяют условию поиску по символам, но встречаются в тексте.
         /// </summary>
-        public IEnumerable<SynonymWord> SynonymWords => _synonymWords.ToArray();
+        public IEnumerable<WordSynonyms> WordsSynonyms => _wordsSynonyms.ToArray();
 
         /// <summary>
         /// Список символов, которые используются для поиска слов в тексте.
@@ -74,14 +74,14 @@ namespace NwSearch.Search
             _wordsSearch = new WordSearch(wordsSeparator);
         }
 
-        public void AddSynonym(SynonymWord synonymWord)
-            => _synonymWords.Add(synonymWord);
+        public void AddSynonym(WordSynonyms synonymWord)
+            => _wordsSynonyms.Add(synonymWord);
 
-        public void AddSynonyms(IEnumerable<SynonymWord> synonymWords)
-            => _synonymWords.AddRange(synonymWords);
+        public void AddSynonyms(IEnumerable<WordSynonyms> synonymWords)
+            => _wordsSynonyms.AddRange(synonymWords);
 
-        public void RemoveSynonym(SynonymWord synonymWord)
-            => _synonymWords.Remove(synonymWord);
+        public void RemoveSynonym(WordSynonyms synonymWord)
+            => _wordsSynonyms.Remove(synonymWord);
 
         public void AddIgnoredWord(string ignoredWord)
             => _ignoredWords.Add(ignoredWord);
@@ -227,7 +227,7 @@ namespace NwSearch.Search
         {
             return text
                 .Split(_wordsSeparator, StringSplitOptions.RemoveEmptyEntries)
-                .Where(word => _synonymWords
+                .Where(word => _wordsSynonyms
                     .Any(synonymWord => synonymWord.Synonyms.Any(synonym => synonym == word)
                                     || word.All(ch => _chars.Any(chIter => chIter == ch))
                                     && word.Length >= MinWordLength
@@ -252,7 +252,7 @@ namespace NwSearch.Search
         private IEnumerable<Keyword> CreateKeywordsArray(string word)
         {
             var keywords = new List<Keyword>();
-            var containedSynonymWords = _synonymWords
+            var containedSynonymWords = _wordsSynonyms
                 .Where(synonymWord => synonymWord.Synonyms
                     .Any(synonym => synonym == word));
             if (containedSynonymWords.Any())
@@ -271,7 +271,7 @@ namespace NwSearch.Search
 
         private IEnumerable<string> GetMultiWordsSynonyms(string text)
         {
-            var allSynonyms = _synonymWords
+            var allSynonyms = _wordsSynonyms
                 .SelectMany(synonymWord => synonymWord.Synonyms);
             var containedSynonyms = _textSearch.FindContainedWords(text, allSynonyms);
 

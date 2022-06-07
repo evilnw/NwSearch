@@ -7,7 +7,7 @@ namespace NwSearch.Entities
     /// Список синонимов слов, которые могут быть связаны с каким-то определенным словом. 
     /// Например, со словом "photoshop" связаны слова "фотошоп", "фотошопе" и т.д.
     /// </summary>
-    public class SynonymWord
+    public class WordSynonyms
     {
         private List<string> _synomyms = new List<string>();
 
@@ -15,12 +15,12 @@ namespace NwSearch.Entities
 
         public IEnumerable<string> Synonyms { get => _synomyms.ToList(); }
 
-        public SynonymWord(string word)
+        public WordSynonyms(string word)
         {
             Word = word;
         }
 
-        public SynonymWord(string word, IEnumerable<string> synonyms)
+        public WordSynonyms(string word, IEnumerable<string> synonyms)
         {
             Word = word;
             _synomyms.AddRange(synonyms);
