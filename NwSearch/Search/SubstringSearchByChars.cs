@@ -16,7 +16,7 @@ namespace NwSearch.Search
         
         private readonly List<WordSynonyms> _wordsSynonyms = new List<WordSynonyms>();
 
-        private readonly Dictionary<string, int> _customScores = new Dictionary<string, int>();
+        private readonly Dictionary<string, int> _customKeywordsScores = new Dictionary<string, int>();
         
         private List<char> _chars;
 
@@ -48,7 +48,7 @@ namespace NwSearch.Search
         /// <summary>
         /// Имена ключевых слов, у которых значимость(score) отличается от стандартного значения DefaultKeywordScore
         /// </summary>
-        public Dictionary<string, int> CustomScores => new Dictionary<string, int>(_customScores);
+        public Dictionary<string, int> CustomKeywordsScores => new Dictionary<string, int>(_customKeywordsScores);
 
         public IEnumerable<string> WordsSeparator
         {
@@ -86,7 +86,7 @@ namespace NwSearch.Search
         }
 
         public void AddCustomKeywordScore(string keywordName, int score)
-            => _customScores[keywordName] = score;
+            => _customKeywordsScores[keywordName] = score;
 
         public void AddCustomKeywordsScores(IEnumerable<KeyValuePair<string, int>> pairs)
             => pairs.ToList().ForEach(pair => AddCustomKeywordScore(pair.Key, pair.Value));
@@ -298,6 +298,6 @@ namespace NwSearch.Search
         private Keyword CreateKeyword(string keywordName)
             => new Keyword(
                 name: keywordName,
-                score: _customScores.ContainsKey(keywordName) ? _customScores[keywordName] : DefaultKeywordScore);
+                score: _customKeywordsScores.ContainsKey(keywordName) ? _customKeywordsScores[keywordName] : DefaultKeywordScore);
     }
 }
