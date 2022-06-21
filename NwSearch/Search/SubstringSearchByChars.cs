@@ -15,6 +15,8 @@ namespace NwSearch.Search
         private readonly List<string> _ignoredWords = new List<string>();
         
         private readonly List<WordSynonyms> _wordsSynonyms = new List<WordSynonyms>();
+
+        private readonly Dictionary<string, int> _customScores = new Dictionary<string, int>();
         
         private List<char> _chars;
 
@@ -23,6 +25,10 @@ namespace NwSearch.Search
         private readonly IWordSearch _wordsSearch;
         
         public string JoinNameSeparator { get; set; } = " ";
+        /// <summary>
+        /// Значимость(Score) по умолчанию для найденых ключевых слов
+        /// </summary>
+        public int DefaultKeywordScore { get; set; } = 1;
         
         /// <summary>
         /// Минимальная длинна каждого найденного в тексте слова.
@@ -38,6 +44,11 @@ namespace NwSearch.Search
         /// Список слов, которые следует проигнорировать даже если они удоволетворяют поиску
         /// </summary>
         public IEnumerable<string> IgnoredWords => _ignoredWords.ToArray();
+
+        /// <summary>
+        /// Имена ключевых слов, у которых значимость(score) отличается от стандартного значения DefaultKeywordScore
+        /// </summary>
+        public Dictionary<string, int> CustomScores => new Dictionary<string, int>(_customScores);
 
         public IEnumerable<string> WordsSeparator
         {
@@ -73,6 +84,12 @@ namespace NwSearch.Search
             _textSearch = new TextSearch(wordsSeparator);
             _wordsSearch = new WordSearch(wordsSeparator);
         }
+
+        public void AddCustomKeywordScore(string keywordName, int score)
+            => _customScores[keywordName] = score;
+
+        public void AddCustomKeywordsScores(IEnumerable<KeyValuePair<string, int>> pairs)
+            => pairs.ToList().ForEach(pair => AddCustomKeywordScore(pair.Key, pair.Value));
 
         public void AddSynonym(WordSynonyms synonymWord)
             => _wordsSynonyms.Add(synonymWord);
@@ -252,19 +269,19 @@ namespace NwSearch.Search
         private IEnumerable<Keyword> CreateKeywordsArray(string word)
         {
             var keywords = new List<Keyword>();
-            var containedSynonymWords = _wordsSynonyms
+            var containedWordsSynonyms = _wordsSynonyms
                 .Where(synonymWord => synonymWord.Synonyms
                     .Any(synonym => synonym == word));
-            if (containedSynonymWords.Any())
+            if (containedWordsSynonyms.Any())
             {
-                foreach (var synonymWord in containedSynonymWords)
+                foreach (var wordSynonym in containedWordsSynonyms)
                 {
-                    keywords.Add(new Keyword(synonymWord.Word));
+                    keywords.Add(CreateKeyword(wordSynonym.Word));
                 }
             }
             else
             {
-                keywords.Add(new Keyword(word));
+                keywords.Add(CreateKeyword(word));
             }
             return keywords;
         }
@@ -277,5 +294,10 @@ namespace NwSearch.Search
 
             return _wordsSearch.FindMultiWords(containedSynonyms);
         }
+
+        private Keyword CreateKeyword(string keywordName)
+            => new Keyword(
+                name: keywordName,
+                score: _customScores.ContainsKey(keywordName) ? _customScores[keywordName] : DefaultKeywordScore);
     }
 }
