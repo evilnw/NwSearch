@@ -1,9 +1,8 @@
 ﻿using NwSearch.Entities;
 
-namespace NwSearch.Search
+namespace NwSearch.Search;
+
+public interface ISubstringSearch
 {
-    public interface ISubstringSearch
-    {
-        SearchResult<string> FindSubstring(string text);
-    }
+    SearchResult<string> FindSubstring(string text);
 }

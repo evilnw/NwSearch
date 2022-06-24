@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿
+namespace NwSearch.Search;
 
-namespace NwSearch.Search
+public interface IWordSearch
 {
-    public interface IWordSearch
-    {
-        IEnumerable<string> WordsSeparator { get; set; }
+    IEnumerable<string> WordsSeparator { get; set; }
 
-        public IEnumerable<string> FindMultiWords(IEnumerable<string> words, int minWordsCount = 2);
-    }
+    public IEnumerable<string> FindMultiWords(IEnumerable<string> words, int minWordsCount = 2);
 }

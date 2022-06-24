@@ -1,9 +1,8 @@
 ﻿
-namespace NwSearch.Entities
-{
-    public enum SearchResultStatus 
-    { 
-        Empty, 
-        Success 
-    }
+namespace NwSearch.Entities;
+
+public enum SearchResultStatus 
+{ 
+    Empty, 
+    Success 
 }
