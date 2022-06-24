@@ -1,5 +1,4 @@
-﻿
-namespace NwSearch.Search;
+﻿namespace NwSearch.Search;
 
 public interface IWordSearch
 {
