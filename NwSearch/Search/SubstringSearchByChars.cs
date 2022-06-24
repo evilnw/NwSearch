@@ -120,13 +120,14 @@ namespace NwSearch.Search
         /// В _chars - хранятся все английские символы('a', 'b', 'c' и т.д.)
         /// Результат:
         /// В результате SearchResult.SearchItem.Value будет хранится строка("adobe фотошоп cloud")
-        /// В SearchResult.KeywordsMatch и SearchResult.SearchItem.Keywords будут хранится ключевые слова:
-        /// "adobe", "photoshop", "cloud"
+        /// В SearchResult.KeywordsMatch - полный список ключевых слов(с повторами)
+        /// и SearchResult.SearchItem.Keywords - список уникальных ключевых слов(без повторов)
         /// </example>
         public SearchResult<string> FindSubstring(string text)
         {
-            var searchItem = CreateSearchItem(text);
-            
+            var substringKeywords = FindKeywords(text);
+            var searchItem = CreateSearchItem(substringKeywords.Key, substringKeywords.Value);
+
             if (String.IsNullOrEmpty(searchItem.Value))
             {
                 return new SearchResult<string>() { Status = SearchResultStatus.Empty };
@@ -142,36 +143,25 @@ namespace NwSearch.Search
             
             var searchResultStatus = (isOnlyDigits == true) ? SearchResultStatus.Empty : SearchResultStatus.Success;
 
-            return new SearchResult<string>(searchResultStatus,
-                                            searchItem,
-                                            searchItem.Keywords.Sum(keyword => keyword.Score),
-                                            searchItem.Keywords);
-        }
-
-        private IEnumerable<Keyword> MergeKeywords(IEnumerable<Keyword> keywords)
-        {
-            var mergedKeywords = new List<Keyword>();
-            var keywordsNames = keywords
-                .Select(keyword => keyword.Name)
-                .Distinct();
-
-            foreach (string keywordName in keywordsNames)
-            {
-                mergedKeywords.Add(new Keyword(keywordName, keywords.Count(keyword => keyword.Name == keywordName)));
-            }
-
-            return mergedKeywords;
+            return new SearchResult<string>(status: searchResultStatus,
+                                            searchItem: searchItem,
+                                            matchScore: substringKeywords.Value.Sum(keyword => keyword.Score),
+                                            matchedKeywords: substringKeywords.Value);
         }
 
         /* Пример алгоритма формирования имени:
             1. Найти все словосочетния(2 и более слова) из _synonymWords, которые есть в тексте.  
-            2. Для каждого словосочетния получить его все индексы в тексте.
+            2. Для каждого словосочетния получить все индексы в тексте.
             3. Произвести иттерацию по каждому индексу.
-            4. Находим все словосочетния синонимы, которые находятся по данному индексу и соритурем их в порядке убывания размера словосочетания.
+            4. Найти все словосочетния синонимы, которые находятся по данному индексу и соритурем их в порядке убывания размера словосочетания.
             5. Из подстроки между currentTextPosition и индексом словосочетния извлекаем все одиночные слова, а также формируем ключевые слова.
-            6. После итерации индексов извлекаем слова из оставшегося необработанного текста между currentTextPosition и text.Lenght
-         */
-        private SearchItem<string> CreateSearchItem(string text)
+            6. После итерации индексов извлекаем слова из оставшегося необработанного текста между currentTextPosition и text.Lenght */
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns>key - строка, в которой найдены ключевые слова. value - список ключевых слов</returns>
+        private KeyValuePair<string, IEnumerable<Keyword>> FindKeywords(string text)
         {
             string name = "";
             var keywords = new List<Keyword>();
@@ -186,7 +176,7 @@ namespace NwSearch.Search
                 .Distinct();
 
             int currentTextPosition = 0;    // позиция в тексте до которой извлекается название
-            
+
             foreach (int index in synonymsIndexesArray)
             {
                 var synonyms = synonymsIndexesDic
@@ -237,8 +227,16 @@ namespace NwSearch.Search
                 keywords.AddRange(CreateKeywordsArray(nameWordsArray));
             }
 
-            return new SearchItem<string>(name, MergeKeywords(keywords), 1);
+            return new KeyValuePair<string, IEnumerable<Keyword>>(name, keywords);
         }
+
+        private IEnumerable<Keyword> MergeKeywords(IEnumerable<Keyword> keywords)
+            => keywords.Select(keyword => keyword.Name)
+            .Distinct()
+            .Select(keywordName => CreateKeyword(keywordName));
+
+        private SearchItem<string> CreateSearchItem(string name, IEnumerable<Keyword> keywords)
+            => new SearchItem<string>(name, MergeKeywords(keywords), 1);
 
         private IEnumerable<string> GetSimpleNameWords(string text)
         {
